@@ -36,7 +36,7 @@
   template: dest=/etc/my.cnf.d/server.cnf src=server.cnf.j2 owner=root group=root mode=0644
   notify: Restart mysql
 
-- name: Initialize datadir if it does  not exist
+- name: Initialize datadir if it does not exist
   command: mysql_install_db
   args:
     creates: '{{mysql_datadir}}/mysql'
@@ -46,7 +46,7 @@
 
 - block:
   - name: Secure installation
-    mysql_user: name=root host={{item}} check_implicit_admin=yes password='{{mysql_root_password}}' login_user=root login_password='{{mysql_root_password}}'
+    mysql_user: name=root host={{item}} check_implicit_admin=yes password='{{mysql_root_password}}' login_user=root login_password='{{mysql_root_password}}' config_file={{mysql_config_file}}
     with_items:
       - '{{ansible_fqdn | lower}}'
       - '{{ansible_hostname | lower}}'
@@ -56,14 +56,14 @@
     when: mysql_root_password != ''
 
   - name: Remove anonymous users
-    mysql_user: name='' host={{item}} state=absent login_user=root login_password='{{mysql_root_password}}'
+    mysql_user: name='' host={{item}} state=absent login_user=root login_password='{{mysql_root_password}}' config_file={{mysql_config_file}}
     with_items:
       - '{{ansible_hostname | lower}}'
       - '{{ansible_fqdn | lower}}'
       - localhost
 
   - name: Remove test database
-    mysql_db: name=test state=absent login_user=root login_password='{{mysql_root_password}}'
+    mysql_db: name=test state=absent login_user=root login_password='{{mysql_root_password}}' config_file={{mysql_config_file}}
 
   when: mysql_secure
 

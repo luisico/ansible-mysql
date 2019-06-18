@@ -37,6 +37,9 @@ mysql_secure: true
 # Root password
 mysql_root_password: mysql
 
+# location of config_file 
+mysql_config_file: /etc/my.cnf
+
 # Backup (deactivated by default)
 # Default user password and contact email use the local 'mysqlbck' acocunt
 mysql_backup: false
