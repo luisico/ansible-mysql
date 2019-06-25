@@ -20,14 +20,6 @@
   with_items:
     - '{{mysql_packages}}'
 
-- name: stop service if running
-  service:
-   name: mysql
-   state: stopped
-
-- name: Make sure datadir is present
-  file: path={{mysql_datadir}} state=directory owner=mysql group=mysql mode=0755
-
 - name: Configure mariadb to include files from my.cnf.d
   template: dest=/etc/my.cnf src=my.cnf.j2 owner=root group=root mode=0644
   notify: Restart mysql
@@ -36,10 +28,38 @@
   template: dest=/etc/my.cnf.d/server.cnf src=server.cnf.j2 owner=root group=root mode=0644
   notify: Restart mysql
 
-- name: Initialize datadir if it does not exist
-  command: mysql_install_db
-  args:
-    creates: '{{mysql_datadir}}/mysql'
+- name: find current systemctl status of mysql
+  command: "systemctl status mysql"
+  ignore_errors: true
+  changed_when: false
+  register: r_mysql__mysql_status
+
+- name: find value of datadir in running database
+  command: "mysql -u root --password={{mysql_root_password}} -B --disable-column-names -e 'select @@datadir;'"
+  ignore_errors: true
+  changed_when: false
+  register: r_mysql__mysql_datadir
+
+- name: determine datadir of running mysql, set to null if not available
+  set_fact: r_mysql__datadir_orig="{{r_mysql__mysql_datadir.stdout|default('')}}"
+
+# TODO - We might want to idiot-proof and check that mysql_datadir is not set to null by a user.
+
+- block:
+  - name: stop service if running
+    service:
+     name: mysql
+     state: stopped
+
+  - name: Make sure datadir is present
+    file: path={{mysql_datadir}} state=directory owner=mysql group=mysql mode=0755
+
+  - name: Initialize datadir if mysql contents are not present
+    command: mysql_install_db
+    args:
+      creates: '{{mysql_datadir}}/mysql'
+  when:
+  - mysql_datadir != r_mysql__datadir_orig
 
 - name: Enable service
   service: name=mysqld state=started enabled=yes
