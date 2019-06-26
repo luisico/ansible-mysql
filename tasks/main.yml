@@ -28,12 +28,6 @@
   template: dest=/etc/my.cnf.d/server.cnf src=server.cnf.j2 owner=root group=root mode=0644
   notify: Restart mysql
 
-- name: find current systemctl status of mysql
-  command: "systemctl status mysql"
-  ignore_errors: true
-  changed_when: false
-  register: r_mysql__mysql_status
-
 - name: find value of datadir in running database
   command: "mysql -u root --password={{mysql_root_password}} -B --disable-column-names -e 'select @@datadir;'"
   ignore_errors: true
