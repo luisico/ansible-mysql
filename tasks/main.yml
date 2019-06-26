@@ -53,7 +53,7 @@
     args:
       creates: '{{mysql_datadir}}/mysql'
   when:
-  - mysql_datadir != r_mysql__datadir_orig
+  - mysql_datadir|regex_replace('\\/$','') != r_mysql__datadir_orig|regex_replace('\\/$','')
 
 - name: Enable service
   service: name=mysqld state=started enabled=yes
