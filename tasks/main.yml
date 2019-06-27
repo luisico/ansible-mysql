@@ -69,7 +69,7 @@
 
 - block:
   - name: Secure installation
-    mysql_user: name=root host={{item}} check_implicit_admin=yes password='{{mysql_root_password}}' login_user=root login_password='{{mysql_root_password}}' config_file={{mysql_config_file}}
+    mysql_user: name=root host={{item}} check_implicit_admin=yes password='{{mysql_root_password}}' login_user=root login_password='{{mysql_root_password}}' config_file=/etc/my.cnf
     with_items:
       - '{{ansible_fqdn | lower}}'
       - '{{ansible_hostname | lower}}'
@@ -79,14 +79,14 @@
     when: mysql_root_password != ''
 
   - name: Remove anonymous users
-    mysql_user: name='' host={{item}} state=absent login_user=root login_password='{{mysql_root_password}}' config_file={{mysql_config_file}}
+    mysql_user: name='' host={{item}} state=absent login_user=root login_password='{{mysql_root_password}}' config_file=/etc/my.cnf
     with_items:
       - '{{ansible_hostname | lower}}'
       - '{{ansible_fqdn | lower}}'
       - localhost
 
   - name: Remove test database
-    mysql_db: name=test state=absent login_user=root login_password='{{mysql_root_password}}' config_file={{mysql_config_file}}
+    mysql_db: name=test state=absent login_user=root login_password='{{mysql_root_password}}' config_file=/etc/my.cnf
 
   when: mysql_secure
 
@@ -94,13 +94,13 @@
   when: mysql_encryption_enabled and mysql_encryption_key_plugin == 'file'
 
 - name: Add databases
-  mysql_db: name={{item.name}} state=present login_user=root login_password='{{mysql_root_password}}'
+  mysql_db: name={{item.name}} state=present login_user=root login_password='{{mysql_root_password}}' config_file=/etc/my.cnf
   with_items: '{{mysql_databases}}'
   loop_control:
     label: '{{item | combine({"password": "***"})}}'
 
 - name: Add users
-  mysql_user: name={{item.0.user}} host={{item.1}} password='{{item.0.password}}' priv='{{item.0.name}}.*:{{item.0.privileges | default("ALL")}}' state=present login_user=root login_password='{{mysql_root_password}}' append_privs='{{mysql_append_privs}}'
+  mysql_user: name={{item.0.user}} host={{item.1}} password='{{item.0.password}}' priv='{{item.0.name}}.*:{{item.0.privileges | default("ALL")}}' state=present login_user=root login_password='{{mysql_root_password}}' append_privs='{{mysql_append_privs}}' config_file=/etc/my.cnf
   with_subelements:
     - '{{mysql_databases}}'
     - hosts
