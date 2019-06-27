@@ -36,7 +36,11 @@
     - (mysql_datadir | regex_replace('\\/$', '') != mysql__r_values.stdout_lines[0] | regex_replace('\\/$', '')) or
       (mysql_socket != mysql__r_values.stdout_lines[1])
 
+- name: Make sure datadir is present
+  file: path={{mysql_datadir}} state=directory owner=mysql group=mysql mode=0755
 
+- name: Make sure directory for the socket is present
+  file: path={{mysql_socket | dirname}} state=directory owner=mysql group=mysql mode=0755
 
 - name: Configure mariadb to include files from my.cnf.d
   template: dest=/etc/my.cnf src=my.cnf.j2 owner=root group=root mode=0644
@@ -45,12 +49,6 @@
 - name: Configure server
   template: dest=/etc/my.cnf.d/server.cnf src=server.cnf.j2 owner=root group=root mode=0644
   notify: Restart mysql
-
-- name: Make sure datadir is present
-  file: path={{mysql_datadir}} state=directory owner=mysql group=mysql mode=0755
-
-- name: Make sure directory for the socket is present
-  file: path={{mysql_socket| dirname}} state=directory owner=mysql group=mysql mode=0755
 
 - name: Initialize datadir if mysql contents are not present
   command: mysql_install_db
