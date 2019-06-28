@@ -37,6 +37,16 @@ mysql_secure: true
 # Root password
 mysql_root_password: mysql
 
+# Optional /etc/systemd/system/mariadb.service.d files. Defaults to empty.
+# See https://mariadb.com/kb/en/library/systemd/ for info. Example
+#mysql_systemd_config:
+#  - name: LimitNOFILE           # Required
+#    value: 2400                 # Required (except `state: absent`)
+#    state: present              # Optional (defaults to `present`)
+#    section: Service            # Optional (defaults to `Service`)
+#    file: limit.conf            # Required file name
+mysql_systemd_config: []
+
 # Backup (deactivated by default)
 # Default user password and contact email use the local 'mysqlbck' acocunt
 mysql_backup: false
