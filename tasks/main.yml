@@ -20,8 +20,27 @@
   with_items:
     - '{{mysql_packages}}'
 
+- name: Find current datadir and socket
+  command: >
+    mysql -u root -p{{mysql_root_password}} -B --disable-column-names -e 'select @@datadir; select @@socket;'
+  failed_when: 'mysql__r_values.rc > 0 and "ERROR 2002 (HY000)" not in mysql__r_values.stderr'
+  changed_when: false
+  check_mode: no
+  register: mysql__r_values
+  no_log: true
+
+- name: Stop service if datadir or socket are to be changed
+  service: name=mysql state=stopped
+  when:
+    - mysql__r_values.stderr == ''
+    - (mysql_datadir | regex_replace('\\/$', '') != mysql__r_values.stdout_lines[0] | regex_replace('\\/$', '')) or
+      (mysql_socket != mysql__r_values.stdout_lines[1])
+
 - name: Make sure datadir is present
   file: path={{mysql_datadir}} state=directory owner=mysql group=mysql mode=0755
+
+- name: Make sure directory for the socket is present
+  file: path={{mysql_socket | dirname}} state=directory owner=mysql group=mysql mode=0755
 
 - name: Configure mariadb to include files from my.cnf.d
   template: dest=/etc/my.cnf src=my.cnf.j2 owner=root group=root mode=0644
@@ -31,12 +50,17 @@
   template: dest=/etc/my.cnf.d/server.cnf src=server.cnf.j2 owner=root group=root mode=0644
   notify: Restart mysql
 
+- name: Initialize datadir if mysql contents are not present
+  command: mysql_install_db
+  args:
+    creates: '{{mysql_datadir}}/mysql'
+
 - name: Enable service
   service: name=mysqld state=started enabled=yes
 
 - block:
   - name: Secure installation
-    mysql_user: name=root host={{item}} check_implicit_admin=yes password='{{mysql_root_password}}' login_user=root login_password='{{mysql_root_password}}'
+    mysql_user: name=root host={{item}} check_implicit_admin=yes password='{{mysql_root_password}}' login_user=root login_password='{{mysql_root_password}}' config_file=/etc/my.cnf
     with_items:
       - '{{ansible_fqdn | lower}}'
       - '{{ansible_hostname | lower}}'
@@ -46,14 +70,14 @@
     when: mysql_root_password != ''
 
   - name: Remove anonymous users
-    mysql_user: name='' host={{item}} state=absent login_user=root login_password='{{mysql_root_password}}'
+    mysql_user: name='' host={{item}} state=absent login_user=root login_password='{{mysql_root_password}}' config_file=/etc/my.cnf
     with_items:
       - '{{ansible_hostname | lower}}'
       - '{{ansible_fqdn | lower}}'
       - localhost
 
   - name: Remove test database
-    mysql_db: name=test state=absent login_user=root login_password='{{mysql_root_password}}'
+    mysql_db: name=test state=absent login_user=root login_password='{{mysql_root_password}}' config_file=/etc/my.cnf
 
   when: mysql_secure
 
@@ -61,13 +85,13 @@
   when: mysql_encryption_enabled and mysql_encryption_key_plugin == 'file'
 
 - name: Add databases
-  mysql_db: name={{item.name}} state=present login_user=root login_password='{{mysql_root_password}}'
+  mysql_db: name={{item.name}} state=present login_user=root login_password='{{mysql_root_password}}' config_file=/etc/my.cnf
   with_items: '{{mysql_databases}}'
   loop_control:
     label: '{{item | combine({"password": "***"})}}'
 
 - name: Add users
-  mysql_user: name={{item.0.user}} host={{item.1}} password='{{item.0.password}}' priv='{{item.0.name}}.*:{{item.0.privileges | default("ALL")}}' state=present login_user=root login_password='{{mysql_root_password}}' append_privs='{{mysql_append_privs}}'
+  mysql_user: name={{item.0.user}} host={{item.1}} password='{{item.0.password}}' priv='{{item.0.name}}.*:{{item.0.privileges | default("ALL")}}' state=present login_user=root login_password='{{mysql_root_password}}' append_privs='{{mysql_append_privs}}' config_file=/etc/my.cnf
   with_subelements:
     - '{{mysql_databases}}'
     - hosts

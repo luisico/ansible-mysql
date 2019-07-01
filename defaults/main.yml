@@ -29,6 +29,7 @@ mysql_packages:
 
 # Path to data
 mysql_datadir: /var/lib/mysql
+mysql_socket: '{{mysql_datadir}}/mysqld.sock'
 
 # Set to false if you don't want to run tasks to secure the database
 mysql_secure: true
