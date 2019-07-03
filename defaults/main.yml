@@ -37,8 +37,8 @@ mysql_secure: true
 # Root password
 mysql_root_password: mysql
 
-# Optional /etc/systemd/system/mariadb.service.d files. Defaults to empty.
-# See https://mariadb.com/kb/en/library/systemd/ for info. Example
+# List of systemd options for MariaDB's service unit.
+# See https://mariadb.com/kb/en/library/systemd/ for info. Example:
 #mysql_systemd_config:
 #  - name: LimitNOFILE           # Required
 #    value: 2400                 # Required (except `state: absent`)
