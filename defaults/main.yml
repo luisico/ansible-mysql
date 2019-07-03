@@ -46,6 +46,7 @@ mysql_root_password: mysql
 #    section: Service            # Section in INI file (default: `Service`)
 #    file: limit.conf            # INI filename in `/etc/systemd/system/mariadb.service.d/` (default: `options.conf`)
 #    state: present              # State (default: `present`)
+mysql_systemd_config: []
 
 # Backup (deactivated by default)
 # Default user password and contact email use the local 'mysqlbck' acocunt
