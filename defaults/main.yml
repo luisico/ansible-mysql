@@ -37,6 +37,17 @@ mysql_secure: true
 # Root password
 mysql_root_password: mysql
 
+# List of systemd options for MariaDB's service unit.
+# See https://mariadb.com/kb/en/library/systemd/ for info.
+# List is processed by Ansible's `ini_file` module. Example:
+#mysql_systemd_config:
+#  - name: LimitNOFILE           # Option name (required)
+#    value: 2400                 # Option value (required, except for `state: absent`)
+#    section: Service            # Section in INI file (default: `Service`)
+#    file: limit.conf            # INI filename in `/etc/systemd/system/mariadb.service.d/` (default: `options.conf`)
+#    state: present              # State (default: `present`)
+mysql_systemd_config: []
+
 # Backup (deactivated by default)
 # Default user password and contact email use the local 'mysqlbck' acocunt
 mysql_backup: false

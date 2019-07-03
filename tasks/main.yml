@@ -55,6 +55,11 @@
   args:
     creates: '{{mysql_datadir}}/mysql'
 
+- name: Configure systemd service parameters in optional files
+  ini_file: path='/etc/systemd/system/mariadb.service.d/{{item.file | default("options.conf")}}' section='{{item.section | default("Service")}}' option='{{item.name}}' value='{{item.value}}' owner=root group=root mode=0600
+  with_items: '{{mysql_systemd_config}}'
+  notify: Restart mysql
+
 - name: Enable service
   service: name=mysqld state=started enabled=yes
 
