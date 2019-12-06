@@ -61,7 +61,7 @@
   notify: Restart mysql
 
 - name: Enable service
-  service: name=mysqld state=started enabled=yes
+  service: name=mariadb state=started enabled=yes
 
 - block:
   - name: Secure installation
