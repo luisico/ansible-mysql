@@ -33,7 +33,7 @@ pid-file=/var/run/mysqld/mysqld.pid
 # you can put MariaDB-only options here
 [mariadb]
 
-# This group is only read by MariaDB-10.3 servers.
+# This group is only read by MariaDB servers with a specific version.
 # If you use the same .cnf file for MariaDB of different versions,
 # use this group for options that older servers don't understand
-[mariadb-10.3]
+[mariadb-{{mysql_version}}]

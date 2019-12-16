@@ -42,7 +42,7 @@
 - name: Make sure directory for the socket is present
   file: path={{mysql_socket | dirname}} state=directory owner=mysql group=mysql mode=0755
 
-- name: Configure mariadb to include files from my.cnf.d
+- name: Configure server to include files from my.cnf.d
   template: dest=/etc/my.cnf src=my.cnf.j2 owner=root group=root mode=0644
   notify: Restart mysql
 
