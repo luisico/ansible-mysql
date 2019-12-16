@@ -60,7 +60,7 @@
   with_items: '{{mysql_systemd_config}}'
   notify: Restart mysql
 
-- name: Enable service
+- name: Enable service "{{mysql_service}}"
   service: name={{mysql_service}} state=started enabled=yes
 
 - block:
