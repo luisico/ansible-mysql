@@ -1,2 +1,3 @@
 ---
 mysql_enabled_repos: '{{(mysql_enablerepos | length > 0) | ternary(mysql_enablerepos, mysql_repos | map(attribute= "name")) | unique | join(",")}}'
+mysql_service: '{{"mariadb" if ("mariadb-server" in mysql_packages | map("lower")) else "mysqld"}}'
