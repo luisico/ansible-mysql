@@ -42,7 +42,7 @@
 - name: Make sure directory for the socket is present
   file: path={{mysql_socket | dirname}} state=directory owner=mysql group=mysql mode=0755
 
-- name: Configure mariadb to include files from my.cnf.d
+- name: Configure server to include files from my.cnf.d
   template: dest=/etc/my.cnf src=my.cnf.j2 owner=root group=root mode=0644
   notify: Restart mysql
 
@@ -56,12 +56,12 @@
     creates: '{{mysql_datadir}}/mysql'
 
 - name: Configure systemd service parameters in optional files
-  ini_file: path='/etc/systemd/system/mariadb.service.d/{{item.file | default("options.conf")}}' section='{{item.section | default("Service")}}' option='{{item.name}}' value='{{item.value}}' owner=root group=root mode=0600
+  ini_file: path='/etc/systemd/system/{{mysql_service}}.service.d/{{item.file | default("options.conf")}}' section='{{item.section | default("Service")}}' option='{{item.name}}' value='{{item.value}}' owner=root group=root mode=0600
   with_items: '{{mysql_systemd_config}}'
   notify: Restart mysql
 
-- name: Enable service
-  service: name=mysqld state=started enabled=yes
+- name: Enable service "{{mysql_service}}"
+  service: name={{mysql_service}} state=started enabled=yes
 
 - block:
   - name: Secure installation
